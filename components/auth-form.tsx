@@ -66,9 +66,8 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
         setLoading(false)
 
-        // Redirect to Verification Page with the dynamic Vercel verification link
-        const link = regRes.verificationLink ? encodeURIComponent(regRes.verificationLink) : ''
-        window.location.href = `/verify-email?email=${encodeURIComponent(email)}&role=${role}&link=${link}`
+        // Redirect to Check Email Inbox page
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}&role=${role}`
       } else {
         // Sign In Flow
         const signInRes = await signInUserAction({ email, password })

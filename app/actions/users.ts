@@ -1,6 +1,7 @@
 'use server'
 
 import { auth, hashPassword, verifyPassword, getAuthVerificationLink, getAppBaseUrl } from '@/lib/auth'
+import { sendVerificationEmail } from '@/lib/email'
 import { supabaseAdmin } from '@/utils/supabase/admin'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -330,6 +331,14 @@ export async function registerUserAction(data: {
       console.log('Supabase Auth direct link notice (using app verification link):', e)
     }
 
+    // Send verification link directly to user's email inbox
+    await sendVerificationEmail({
+      email: normalizedEmail,
+      name: data.name || firstName,
+      verificationLink,
+      role: data.role,
+    })
+
     // Set HTTP session cookie
     cookieStore.set('session_user_id', resolvedUserId, {
       path: '/',
@@ -338,9 +347,42 @@ export async function registerUserAction(data: {
     })
 
     revalidatePath('/')
-    return { success: true, userId: resolvedUserId, role: data.role, verificationLink }
+    return { success: true, userId: resolvedUserId, role: data.role }
   } catch (error) {
     console.error('Error in registerUserAction:', error)
     return { success: false, error: 'Registration failed. Please try again.' }
   }
 }
+
+export async function resendVerificationEmailAction(email: string) {
+  try {
+    const normalizedEmail = email.toLowerCase().trim()
+
+    const { data: profiles } = await supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .eq('email', normalizedEmail)
+      .limit(1)
+
+    if (!profiles || profiles.length === 0) {
+      return { success: false, error: 'No user profile found with that email address.' }
+    }
+
+    const user = profiles[0]
+    const verificationLink = getAuthVerificationLink(user.userId, user.email)
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'User'
+
+    await sendVerificationEmail({
+      email: user.email,
+      name,
+      verificationLink,
+      role: user.role,
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error in resendVerificationEmailAction:', error)
+    return { success: false, error: 'Failed to resend email. Please try again.' }
+  }
+}
+
