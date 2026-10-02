@@ -97,7 +97,13 @@ export async function signInUserAction(data: { email: string; password: string }
 export async function signOutUserAction() {
   try {
     const cookieStore = await cookies()
-    cookieStore.delete('session_user_id')
+    cookieStore.set('session_user_id', '', {
+      path: '/',
+      httpOnly: true,
+      expires: new Date(0),
+      maxAge: 0,
+    })
+    cookieStore.delete({ name: 'session_user_id', path: '/' })
     revalidatePath('/')
     return { success: true }
   } catch (error) {
