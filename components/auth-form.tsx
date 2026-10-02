@@ -66,9 +66,9 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
         setLoading(false)
 
-        // Redirect based on selected role
-        const targetDashboard = role === 'employer' ? '/employer/dashboard' : '/student/dashboard'
-        window.location.href = targetDashboard
+        // Redirect to Verification Page with the dynamic Vercel verification link
+        const link = regRes.verificationLink ? encodeURIComponent(regRes.verificationLink) : ''
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}&role=${role}&link=${link}`
       } else {
         // Sign In Flow
         const signInRes = await signInUserAction({ email, password })

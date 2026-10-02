@@ -198,3 +198,4 @@ export const notifications = pgTable(
     isReadIdx: index('notifications_isRead_idx').on(table.isRead),
   })
 )
+

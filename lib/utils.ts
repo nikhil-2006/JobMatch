@@ -38,3 +38,37 @@ export function calculateDistance(
 function deg2rad(deg: number): number {
   return deg * (Math.PI / 180)
 }
+
+/**
+ * Resolves the application base URL dynamically for production (Vercel) and local development.
+ * Checks NEXT_PUBLIC_APP_URL, VERCEL_PROJECT_PRODUCTION_URL, VERCEL_URL, and falls back to http://localhost:3000.
+ */
+export function getAppBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/$/, '')
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    let url = process.env.VERCEL_PROJECT_PRODUCTION_URL.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/$/, '')
+  }
+
+  const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
+  if (vercelUrl) {
+    let url = vercelUrl.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/$/, '')
+  }
+
+  return 'http://localhost:3000'
+}
+

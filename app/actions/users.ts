@@ -1,6 +1,6 @@
 'use server'
 
-import { auth, hashPassword, verifyPassword } from '@/lib/auth'
+import { auth, hashPassword, verifyPassword, getAuthVerificationLink, getAppBaseUrl } from '@/lib/auth'
 import { supabaseAdmin } from '@/utils/supabase/admin'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -312,6 +312,24 @@ export async function registerUserAction(data: {
       }
     }
 
+    let verificationLink = getAuthVerificationLink(resolvedUserId, normalizedEmail)
+
+    try {
+      const { data: authLinkData } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'signup',
+        email: normalizedEmail,
+        password: data.password || 'TempPassword123!',
+        options: {
+          redirectTo: `${getAppBaseUrl()}/api/auth/verify?userId=${resolvedUserId}`,
+        },
+      })
+      if (authLinkData?.properties?.action_link) {
+        verificationLink = authLinkData.properties.action_link
+      }
+    } catch (e) {
+      console.log('Supabase Auth direct link notice (using app verification link):', e)
+    }
+
     // Set HTTP session cookie
     cookieStore.set('session_user_id', resolvedUserId, {
       path: '/',
@@ -320,7 +338,7 @@ export async function registerUserAction(data: {
     })
 
     revalidatePath('/')
-    return { success: true, userId: resolvedUserId, role: data.role }
+    return { success: true, userId: resolvedUserId, role: data.role, verificationLink }
   } catch (error) {
     console.error('Error in registerUserAction:', error)
     return { success: false, error: 'Registration failed. Please try again.' }

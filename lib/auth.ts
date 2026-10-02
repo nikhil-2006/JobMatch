@@ -51,3 +51,13 @@ export const auth = {
     },
   },
 }
+
+export { getAppBaseUrl } from '@/lib/utils'
+import { getAppBaseUrl } from '@/lib/utils'
+
+export function getAuthVerificationLink(userId: string, email: string): string {
+  const baseUrl = getAppBaseUrl()
+  const token = Buffer.from(`${userId}:${email}:${Date.now()}`).toString('base64url')
+  return `${baseUrl}/api/auth/verify?userId=${encodeURIComponent(userId)}&token=${token}`
+}
+
