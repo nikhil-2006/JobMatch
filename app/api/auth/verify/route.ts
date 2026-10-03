@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     await supabaseAdmin
       .from('user_profiles')
       .update({ isVerified: true, updatedAt: new Date().toISOString() })
-      .eq('userId', userId)
+      .eq('userId', user.userId)
 
     // 3. Set session cookie for seamless sign in
     const cookieStore = await cookies()

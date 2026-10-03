@@ -67,6 +67,16 @@ export async function signInUserAction(data: { email: string; password: string }
       }
     }
 
+    // Block unverified accounts from signing in until email is verified
+    if (user.isVerified === false) {
+      return {
+        success: false,
+        error: 'Your email address is not verified yet. Please check your email inbox to verify your account.',
+        unverified: true,
+        email: user.email,
+      }
+    }
+
     // Set HTTP session cookie
     cookieStore.set('session_user_id', user.userId, {
       path: '/',
@@ -259,7 +269,7 @@ export async function registerUserAction(data: {
     const profileId = `profile_${Date.now()}`
     const hashedPassword = data.password ? hashPassword(data.password) : undefined
 
-    const isVerified = data.role === 'student'
+    const isVerified = false
 
     const nameParts = (data.name || 'User').trim().split(' ')
     const firstName = nameParts[0] || 'User'
@@ -345,13 +355,7 @@ export async function registerUserAction(data: {
       role: data.role,
     })
 
-    // Set HTTP session cookie
-    cookieStore.set('session_user_id', resolvedUserId, {
-      path: '/',
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7,
-    })
-
+    // Do NOT set HTTP session cookie yet — user must click email verification link first
     revalidatePath('/')
     return { success: true, userId: resolvedUserId, role: data.role }
   } catch (error) {

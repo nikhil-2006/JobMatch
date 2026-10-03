@@ -32,6 +32,8 @@ export const auth = {
         if (!profiles || profiles.length === 0) return null
 
         const u = profiles[0]
+        if (u.isVerified === false) return null
+
         const fullName =
           [u.firstName, u.lastName].filter(Boolean).join(' ') ||
           u.companyName ||

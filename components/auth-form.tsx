@@ -55,18 +55,9 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           return
         }
 
-        // Set client user storage
-        const userData = {
-          id: regRes.userId,
-          name: name || companyName || 'MVGR User',
-          email,
-          role,
-        }
-        localStorage.setItem('currentUser', JSON.stringify(userData))
-
         setLoading(false)
 
-        // Redirect to Check Email Inbox page
+        // Redirect to Check Email Inbox page without creating session/localStorage until verified
         window.location.href = `/verify-email?email=${encodeURIComponent(email)}&role=${role}`
       } else {
         // Sign In Flow
@@ -74,6 +65,10 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
         if (!signInRes.success || !signInRes.user) {
           setLoading(false)
+          if ((signInRes as any).unverified) {
+            window.location.href = `/verify-email?email=${encodeURIComponent(email)}`
+            return
+          }
           setError(signInRes.error ?? 'Invalid email or password.')
           return
         }
