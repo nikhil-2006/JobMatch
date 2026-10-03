@@ -92,6 +92,12 @@ function VerifyEmailContent() {
             {resending ? 'Sending Email...' : 'Resend Verification Email'}
           </Button>
 
+          <Link href="/sign-in" className="block w-full">
+            <Button variant="default" className="w-full font-bold py-5 rounded-xl">
+              I Have Verified — Sign In
+            </Button>
+          </Link>
+
           {resendStatus && (
             <p
               className={`text-xs p-2.5 rounded-lg font-semibold border ${

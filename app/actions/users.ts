@@ -329,23 +329,7 @@ export async function registerUserAction(data: {
       }
     }
 
-    let verificationLink = getAuthVerificationLink(resolvedUserId, normalizedEmail)
-
-    try {
-      const { data: authLinkData } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'signup',
-        email: normalizedEmail,
-        password: data.password || 'TempPassword123!',
-        options: {
-          redirectTo: `${getAppBaseUrl()}/api/auth/verify?userId=${resolvedUserId}`,
-        },
-      })
-      if (authLinkData?.properties?.action_link) {
-        verificationLink = authLinkData.properties.action_link
-      }
-    } catch (e) {
-      console.log('Supabase Auth direct link notice (using app verification link):', e)
-    }
+    const verificationLink = getAuthVerificationLink(resolvedUserId, normalizedEmail)
 
     // Send verification link directly to user's email inbox
     await sendVerificationEmail({
